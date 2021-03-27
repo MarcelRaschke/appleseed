@@ -38,8 +38,8 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -70,9 +70,8 @@ namespace
         // Note: it is crucial that we read mesh files as well, so that we can collect
         // material slots declared by objects. Material slots are required by the project
         // file updater, for instance when migrating projects from rev. 7 to rev. 8.
-        ProjectFileReader reader;
         return
-            reader.read(
+            ProjectFileReader::read(
                 project_filepath.c_str(),
                 schema_filepath.string().c_str(),
                 ProjectFileReader::OmitProjectFileUpdate);

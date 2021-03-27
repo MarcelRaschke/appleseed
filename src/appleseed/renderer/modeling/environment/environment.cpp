@@ -36,8 +36,8 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -67,8 +67,8 @@ Environment::Environment(
 {
     set_name(name);
 
-    m_inputs.declare("environment_edf", InputFormatEntity, "");
-    m_inputs.declare("environment_shader", InputFormatEntity, "");
+    m_inputs.declare("environment_edf", InputFormat::Entity, "");
+    m_inputs.declare("environment_shader", InputFormat::Entity, "");
 }
 
 void Environment::release()

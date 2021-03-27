@@ -36,19 +36,17 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -195,7 +193,7 @@ namespace
             {
                 sample.set_to_scattering(ScatteringMode::Diffuse, probability);
                 sample.m_aov_components.m_albedo = values->m_base_color;
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 
@@ -290,7 +288,7 @@ namespace
             if (probability > 1.0e-6f)
             {
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 
@@ -360,17 +358,17 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("base_color", InputFormatSpectralReflectance);
-            m_inputs.declare("subsurface", InputFormatFloat, "0.0");
-            m_inputs.declare("metallic", InputFormatFloat, "0.0");
-            m_inputs.declare("specular", InputFormatFloat, "0.0");
-            m_inputs.declare("specular_tint", InputFormatFloat, "0.0");
-            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.1");
-            m_inputs.declare("sheen", InputFormatFloat, "0.0");
-            m_inputs.declare("sheen_tint", InputFormatFloat, "0.0");
-            m_inputs.declare("clearcoat", InputFormatFloat, "0.0");
-            m_inputs.declare("clearcoat_gloss", InputFormatFloat, "1.0");
+            m_inputs.declare("base_color", InputFormat::SpectralReflectance);
+            m_inputs.declare("subsurface", InputFormat::Float, "0.0");
+            m_inputs.declare("metallic", InputFormat::Float, "0.0");
+            m_inputs.declare("specular", InputFormat::Float, "0.0");
+            m_inputs.declare("specular_tint", InputFormat::Float, "0.0");
+            m_inputs.declare("anisotropic", InputFormat::Float, "0.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.1");
+            m_inputs.declare("sheen", InputFormat::Float, "0.0");
+            m_inputs.declare("sheen_tint", InputFormat::Float, "0.0");
+            m_inputs.declare("clearcoat", InputFormat::Float, "0.0");
+            m_inputs.declare("clearcoat_gloss", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -400,7 +398,7 @@ namespace
             new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
-                values->m_base_color.to_ciexyz(g_std_lighting_conditions);
+                values->m_base_color.reflectance_to_ciexyz(g_std_lighting_conditions);
 
             values->m_precomputed.m_tint_color.set(
                 tint_xyz[1] > 0.0f
@@ -472,8 +470,9 @@ namespace
                     values->m_anisotropic,
                     alpha_x,
                     alpha_y);
-                MicrofacetBRDFHelper<GGXMDF, false>::sample(
+                MicrofacetBRDFHelper<GGXMDF>::sample(
                     sampling_context,
+                    values->m_roughness,
                     alpha_x,
                     alpha_y,
                     DisneySpecularFresnelFun(*values),
@@ -486,8 +485,9 @@ namespace
             else
             {
                 const float alpha = clearcoat_roughness(values);
-                MicrofacetBRDFHelper<GTR1MDF, false>::sample(
+                MicrofacetBRDFHelper<GTR1MDF>::sample(
                     sampling_context,
+                    alpha,
                     alpha,
                     alpha,
                     DisneyClearcoatFresnelFun(*values),
@@ -542,7 +542,7 @@ namespace
                 Spectrum spec;
                 probability +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GGXMDF>::evaluate(
                         alpha_x,
                         alpha_y,
                         DisneySpecularFresnelFun(*values),
@@ -559,7 +559,7 @@ namespace
                 Spectrum clear;
                 probability +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GTR1MDF>::evaluate(
                         alpha,
                         alpha,
                         DisneyClearcoatFresnelFun(*values),
@@ -578,9 +578,7 @@ namespace
                 sample.m_min_roughness = values->m_roughness;
             }
             else
-            {
                 sample.set_to_absorption();
-            }
         }
 
         float evaluate(
@@ -636,7 +634,7 @@ namespace
 
                 Spectrum spec;
                 const float spec_pdf =
-                    MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GGXMDF>::evaluate(
                         alpha_x,
                         alpha_y,
                         DisneySpecularFresnelFun(*values),
@@ -657,7 +655,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 Spectrum clearcoat;
                 const float clearcoat_pdf =
-                    MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GTR1MDF>::evaluate(
                         alpha,
                         alpha,
                         DisneyClearcoatFresnelFun(*values),
@@ -720,7 +718,7 @@ namespace
                     alpha_y);
                 pdf +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper<GGXMDF, false>::pdf(
+                    MicrofacetBRDFHelper<GGXMDF>::pdf(
                         alpha_x,
                         alpha_y,
                         local_geometry,
@@ -733,7 +731,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 pdf +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper<GTR1MDF, false>::pdf(
+                    MicrofacetBRDFHelper<GTR1MDF>::pdf(
                         alpha,
                         alpha,
                         local_geometry,

@@ -31,10 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/texture/tileptr.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/cache.h"
@@ -49,7 +50,6 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class StatisticsVector; }
-namespace foundation    { class Tile; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 
@@ -105,7 +105,7 @@ class TextureStore
 
     struct TileRecord
     {
-        foundation::Tile*       m_tile;
+        TilePtr                 m_tile_ptr;
         volatile std::uint32_t  m_owners;
     };
 

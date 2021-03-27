@@ -38,8 +38,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
+#include <QFutureWatcher>
 #include <QtConcurrent>
 
 // Boost headers.
@@ -66,9 +68,10 @@ ProjectManager::ProjectManager()
   : m_is_loading(false)
   , m_dirty_flag(false)
 {
+
     connect(
-        &m_async_io_future_watcher, SIGNAL(finished()),
-        this, SLOT(slot_load_project_async_complete()));
+        &m_async_io_future_watcher, &QFutureWatcher<bool>::finished,
+        this, &ProjectManager::slot_load_project_async_complete);
 }
 
 void ProjectManager::create_project()
@@ -94,9 +97,7 @@ void ProjectManager::load_project_async(const std::string& filepath)
 
 bool ProjectManager::load_builtin_project(const std::string& name)
 {
-    ProjectFileReader reader;
-    m_project = reader.load_builtin(name.c_str());
-
+    m_project = ProjectFileReader::load_builtin(name.c_str());
     m_dirty_flag = false;
 
     return true;
@@ -200,9 +201,8 @@ bool ProjectManager::do_load_project(const std::string& filepath)
     {
         const std::string schema_filepath = get_project_schema_filepath();
 
-        ProjectFileReader reader;
         auto_release_ptr<Project> loaded_project(
-            reader.read(filepath.c_str(), schema_filepath.c_str()));
+            ProjectFileReader::read(filepath.c_str(), schema_filepath.c_str()));
 
         if (loaded_project.get() == nullptr)
             return false;

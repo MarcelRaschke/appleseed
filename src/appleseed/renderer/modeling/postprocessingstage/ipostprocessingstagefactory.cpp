@@ -30,8 +30,8 @@
 #include "ipostprocessingstagefactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -54,6 +54,7 @@ void IPostProcessingStageFactory::add_common_input_metadata(DictionaryArray& met
                     .insert("value", "10")
                     .insert("type", "soft"))
             .insert("use", "required")
+            .insert("help", "Determines the order in which this stage is applied")
             .insert("default", "0"));
 }
 

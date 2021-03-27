@@ -122,6 +122,9 @@ RendererComponents::RendererComponents(
 
 bool RendererComponents::create()
 {
+    if (!create_shading_result_framebuffer_factory())
+        return false;
+
     if (!create_lighting_engine_factory())
         return false;
 
@@ -134,13 +137,10 @@ bool RendererComponents::create()
     if (!create_pixel_renderer_factory())
         return false;
 
-    if (!create_shading_result_framebuffer_factory())
-        return false;
-
     if (!create_tile_renderer_factory())
         return false;
 
-    if (!create_frame_renderer_factory())
+    if (!create_frame_renderer())
         return false;
 
     return true;
@@ -233,6 +233,7 @@ bool RendererComponents::create_lighting_engine_factory()
                 m_texture_store,
                 m_oiio_texture_system,
                 m_osl_shading_system,
+                *m_shading_result_framebuffer_factory,
                 sppm_params);
 
         m_pass_callback.reset(sppm_pass_callback);
@@ -519,7 +520,7 @@ bool RendererComponents::create_tile_renderer_factory()
     }
 }
 
-bool RendererComponents::create_frame_renderer_factory()
+bool RendererComponents::create_frame_renderer()
 {
     const std::string name = m_params.get_required<std::string>("frame_renderer", "generic");
 

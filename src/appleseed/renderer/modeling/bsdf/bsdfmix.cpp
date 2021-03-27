@@ -36,17 +36,15 @@
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -73,19 +71,19 @@ namespace
 
     const char* Model = "bsdf_mix";
 
-    class BSDFMixImpl
+    class BSDFMix
       : public BSDF
     {
       public:
-        BSDFMixImpl(
+        BSDFMix(
             const char*                 name,
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
-            m_inputs.declare("bsdf0", InputFormatEntity);
-            m_inputs.declare("weight0", InputFormatFloat);
-            m_inputs.declare("bsdf1", InputFormatEntity);
-            m_inputs.declare("weight1", InputFormatFloat);
+            m_inputs.declare("bsdf0", InputFormat::Entity);
+            m_inputs.declare("weight0", InputFormat::Float);
+            m_inputs.declare("bsdf1", InputFormat::Entity);
+            m_inputs.declare("weight1", InputFormat::Float);
         }
 
         void release() override
@@ -176,7 +174,7 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                  // do not multiply by |cos(incoming, normal)|
+                cosine_mult,
                 local_geometry,
                 outgoing,
                 modes,
@@ -218,7 +216,7 @@ namespace
                     ? m_bsdf[0]->evaluate(
                           values->m_child_inputs[0],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,
@@ -233,7 +231,7 @@ namespace
                     ? m_bsdf[1]->evaluate(
                           values->m_child_inputs[1],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,
@@ -323,8 +321,6 @@ namespace
 
         const BSDF* m_bsdf[2];
     };
-
-    typedef BSDFWrapper<BSDFMixImpl, false> BSDFMix;
 }
 
 

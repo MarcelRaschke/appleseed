@@ -60,11 +60,11 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/otherwise.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <exception>
@@ -556,7 +556,7 @@ bool InputBinder::try_bind_scene_entity_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    if (input.format() == InputFormatEntity)
+    if (input.format() == InputFormat::Entity)
     {
         #define BIND(symbol, collection)                        \
             case symbol:                                        \
@@ -637,7 +637,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    if (input.format() == InputFormatEntity)
+    if (input.format() == InputFormat::Entity)
     {
         #define BIND(symbol, collection)                        \
             case symbol:                                        \
@@ -720,7 +720,7 @@ void InputBinder::bind_color_to_input(
     const ColorEntity* color_entity = colors.get_by_name(param_value);
     assert(color_entity);
 
-    input.bind(new ColorSource(*color_entity));
+    input.bind(new ColorSource(*color_entity, input.format()));
 }
 
 void InputBinder::bind_texture_instance_to_input(

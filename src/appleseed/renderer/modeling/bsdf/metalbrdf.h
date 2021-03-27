@@ -34,8 +34,8 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -57,6 +57,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
 {
     Spectrum    m_normal_reflectance;
     Spectrum    m_edge_tint;
+    float       m_edge_tint_weight;
     float       m_reflectance_multiplier;
     float       m_roughness;
     float       m_anisotropy;
@@ -64,10 +65,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
 
     struct Precomputed
     {
-        Spectrum m_n;
-        Spectrum m_k;
-        Spectrum m_fresnel_average;
-        float    m_outside_ior;
+        Spectrum m_a;
     };
 
     Precomputed m_precomputed;
@@ -93,6 +91,27 @@ class APPLESEED_DLLSYMBOL MetalBRDFFactory
 
     // Return metadata for the inputs of this BSDF model.
     foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new BSDF instance.
+    foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+
+//
+// Microfacet Metal BRDF factory.
+//
+
+class APPLESEED_DLLSYMBOL MicrofacetMetalBRDFFactory
+  : public MetalBRDFFactory
+{
+  public:
+    // Return a string identifying this BSDF model.
+    const char* get_model() const override;
+
+    // Return metadata for this BSDF model.
+    foundation::Dictionary get_model_metadata() const override;
 
     // Create a new BSDF instance.
     foundation::auto_release_ptr<BSDF> create(

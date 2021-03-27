@@ -127,7 +127,7 @@ list (APPEND appleseed.python_sources
     ${sources}
 )
 set (blender_python_sources
-    bindblendermeshconverter.cpp
+    bindblenderexport.cpp
     bindblenderprogressivetilecallback.cpp
 )
 source_group ("" FILES
@@ -238,8 +238,17 @@ if (WITH_PYTHON2_BINDINGS)
     target_link_libraries (appleseed.python
         appleseed
         ${Boost_PYTHON_LIBRARY}         # Only Boost.Python2 library
-        ${PYTHON_LIBRARIES}
     )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        target_link_libraries (appleseed.python
+            ${PYTHON_LIBRARIES}
+        )
+    endif ()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set_target_properties (appleseed.python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif ()
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
@@ -249,8 +258,17 @@ if (WITH_PYTHON3_BINDINGS)
         appleseed
         glad
         ${Boost_PYTHON3_LIBRARY}        # Only Boost.Python3 library
-        ${PYTHON3_LIBRARY}
     )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        target_link_libraries (appleseed.python3
+            ${PYTHON3_LIBRARY}
+        )
+    endif ()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set_target_properties (appleseed.python3 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif ()
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries (appleseed.python3
@@ -290,7 +308,7 @@ endif ()
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
+set (py_module_dst "lib/python/appleseed")
 
 install (FILES __init__.py DESTINATION ${py_module_dst})
 install (FILES logtarget.py DESTINATION ${py_module_dst})

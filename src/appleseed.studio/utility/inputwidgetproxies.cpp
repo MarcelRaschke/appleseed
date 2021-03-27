@@ -37,12 +37,12 @@
 #include "renderer/api/color.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -307,8 +307,9 @@ namespace
                     &values[0],
                     output_spectrum);
 
+                // todo: spectral_illuminance_to_ciexyz_standard() should be used for emitters.
                 Color3f ciexyz;
-                spectrum_to_ciexyz_standard(&output_spectrum[0], &ciexyz[0]);
+                spectral_reflectance_to_ciexyz_standard(&output_spectrum[0], &ciexyz[0]);
 
                 return linear_rgb_to_srgb(ciexyz_to_linear_rgb(ciexyz));
             }
@@ -440,7 +441,7 @@ Dictionary InputWidgetProxyCollection::get_values() const
         const std::string value = i->second->get();
 
         if (!value.empty())
-            values.insert(i->first, value);
+            values.insert(i->first.c_str(), value);
     }
 
     return values;

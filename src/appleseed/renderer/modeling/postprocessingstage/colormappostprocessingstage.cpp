@@ -37,6 +37,7 @@
 #include "renderer/utility/messagecontext.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
@@ -51,15 +52,14 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -136,7 +136,7 @@ namespace
                 m_params.get_optional<std::string>(
                     "color_map",
                     "inferno",
-                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "custom"),
+                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "turbo", "custom"),
                     context);
 
             if (color_map == "inferno")
@@ -149,6 +149,8 @@ namespace
                 m_color_map.set_palette_from_array(PlasmaColorMapLinearRGB, countof(PlasmaColorMapLinearRGB) / 3);
             else if (color_map == "viridis")
                 m_color_map.set_palette_from_array(ViridisColorMapLinearRGB, countof(ViridisColorMapLinearRGB) / 3);
+            else if (color_map == "turbo")
+                m_color_map.set_palette_from_array(TurboColorMapLinearRGB, countof(TurboColorMapLinearRGB) / 3);
             else
             {
                 assert(color_map == "custom");
@@ -197,7 +199,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const size_t thread_count) const override
         {
             float min_luminance, max_luminance;
 
@@ -694,19 +696,22 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("Magma", "magma")
                     .insert("Plasma", "plasma")
                     .insert("Viridis", "viridis")
+                    .insert("Turbo", "turbo")
                     .insert("Custom", "custom"))
             .insert("use", "required")
+            .insert("help", "Applied color map")
             .insert("default", "inferno")
             .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "color_map_file_path")
-            .insert("label", "Colormap File Path")
+            .insert("label", "Color Map File Path")
             .insert("type", "file")
             .insert("file_picker_mode", "open")
             .insert("file_picker_type", "image")
             .insert("use", "optional")
+            .insert("help", "Path to a custom color map image")
             .insert("visible_if",
                 Dictionary()
                     .insert("color_map", "custom")));
@@ -717,6 +722,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Auto Range")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Maps the full range of luminance values to the color map")
             .insert("default", "true")
             .insert("on_change", "rebuild_form"));
 
@@ -734,6 +740,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Luminance value mapped to the first row in the colormap")
             .insert("default", "0.0")
             .insert("visible_if",
                 Dictionary()
@@ -753,6 +760,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Luminance value mapped to the last row in the colormap")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()
@@ -764,6 +772,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Add Legend Bar")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Include a legend bar next to the color map")
             .insert("default", "true"));
 
     metadata.push_back(
@@ -780,6 +789,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "64")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Set the number of divisions in the legend bar")
             .insert("default", "8")
             .insert("visible_if",
                 Dictionary()
@@ -791,6 +801,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Render Isolines")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Draw lines of equal relative luminance")
             .insert("default", "false")
             .insert("on_change", "rebuild_form"));
 
@@ -808,6 +819,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "5.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Set the thickness of luminance isolines")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()

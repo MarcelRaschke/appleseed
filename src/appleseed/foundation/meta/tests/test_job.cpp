@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
@@ -36,7 +37,6 @@
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/job/workerthread.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -315,7 +315,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
     {
       public:
         JobCreatingAnotherJob(
-            JobQueue&           job_queue,
+            JobQueue&                  job_queue,
             volatile std::uint32_t*    execution_count)
           : m_job_queue(job_queue)
           , m_execution_count(execution_count)
@@ -329,7 +329,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         }
 
       private:
-        JobQueue&           m_job_queue;
+        JobQueue&                  m_job_queue;
         volatile std::uint32_t*    m_execution_count;
     };
 

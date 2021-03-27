@@ -37,8 +37,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // OpenGL.
 #include <glad/glad.h>
@@ -109,7 +109,9 @@ namespace
         void on_tile_begin(
             const Frame*            /*frame*/,
             const size_t            /*tile_x*/,
-            const size_t            /*tile_y*/) override
+            const size_t            /*tile_y*/,
+            const size_t            /*thread_index*/,
+            const size_t            /*thread_count*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();
@@ -219,7 +221,7 @@ namespace
                          1,  1,
                         -1,  1
                     };
-                    
+
                     // Get shader program set by Blender.
                     glGetIntegerv(GL_CURRENT_PROGRAM, &m_shader_program_id);
 
@@ -282,7 +284,7 @@ namespace
             }
         }
 
-    private:
+      private:
         std::vector<float>      m_buffer;
         size_t                  m_buffer_width;
         size_t                  m_buffer_height;
@@ -418,14 +420,6 @@ namespace
         return auto_release_ptr<BlenderProgressiveTileCallback>(new BlenderProgressiveTileCallback(request_redraw_callback));
     }
 }
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> BlenderProgressiveTileCallback const volatile* get_pointer<BlenderProgressiveTileCallback const volatile>(BlenderProgressiveTileCallback const volatile* p) { return p; }
-}
-#endif
 
 void bind_blender_progressive_tile_callback()
 {

@@ -37,12 +37,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
-#include "foundation/mesh/genericmeshfilewriter.h"
-#include "foundation/mesh/imeshwalker.h"
+#include "foundation/meshio/genericmeshfilewriter.h"
+#include "foundation/meshio/imeshwalker.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

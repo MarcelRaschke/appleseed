@@ -31,13 +31,13 @@
 #include "application.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/log.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/settings.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/exception.hpp"

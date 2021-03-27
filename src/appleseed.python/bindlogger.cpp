@@ -34,9 +34,9 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cstddef>
@@ -76,7 +76,7 @@ namespace
             {
                 this->get_override("write")(category, file, line, header, message);
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }

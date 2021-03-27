@@ -46,16 +46,16 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/hash/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/filtersamplingtable.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -144,7 +144,7 @@ namespace
                 0,                          // number of samples -- unknown
                 instance);                  // initial instance number
 
-            for (size_t i = 0; i < m_sample_count; ++i)
+            for (size_t i = 0, e = m_sample_count; i < e; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
                 const Vector2f s =

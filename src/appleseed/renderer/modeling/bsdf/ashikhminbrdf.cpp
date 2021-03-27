@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/fp.h"
@@ -45,7 +46,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -83,13 +83,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("glossy_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("glossy_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("shininess_u", InputFormatFloat);
-            m_inputs.declare("shininess_v", InputFormatFloat);
+            m_inputs.declare("diffuse_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("glossy_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("glossy_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("shininess_u", InputFormat::Float);
+            m_inputs.declare("shininess_v", InputFormat::Float);
         }
 
         void release() override
@@ -253,7 +253,7 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = 1.0f;
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_glossy_reflected_differentials(local_geometry, 1.0f, outgoing);
             }
         }
 

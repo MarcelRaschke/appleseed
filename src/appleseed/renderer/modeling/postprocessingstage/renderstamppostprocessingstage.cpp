@@ -34,6 +34,7 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -46,9 +47,8 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/resources/logo/appleseed-seeds-256.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/string.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
@@ -58,6 +58,7 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -113,7 +114,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const std::size_t thread_count) const override
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;
@@ -245,6 +246,17 @@ DictionaryArray RenderStampPostProcessingStageFactory::get_input_metadata() cons
             .insert("label", "Format String")
             .insert("type", "text")
             .insert("use", "optional")
+            .insert("help",
+                    "Render stamp text\n"
+                    "Available predefined variables:\n"
+                    "{lib-name}, "
+                    "{lib-version},\n"
+                    "{lib-cpu-features}, "
+                    "{lib-config},\n"
+                    "{lib-build-date}, "
+                    "{lib-build-time},\n"
+                    "{render-time}, "
+                    "{peak-memory}")
             .insert("default", DefaultFormatString));
 
     metadata.push_back(
@@ -261,6 +273,7 @@ DictionaryArray RenderStampPostProcessingStageFactory::get_input_metadata() cons
                         .insert("value", "20.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
+            .insert("help", "Controls the size of the render stamp")
             .insert("default", "1.0"));
 
     return metadata;

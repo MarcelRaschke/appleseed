@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/core/thirdparties.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
@@ -43,14 +44,13 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/commandlineparser.h"
-#include "foundation/utility/log.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
-#include <cstdlib>
 #include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <string>
 
@@ -109,13 +109,6 @@ struct CommandLineHandlerBase::Impl
             Compiler::get_compiler_name(),
             Compiler::get_compiler_version());
 
-        const bool WithDisneyMaterial =
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-            true;
-#else
-            false;
-#endif
-
         const bool WithEmbree =
 #ifdef APPLESEED_WITH_EMBREE
             true;
@@ -141,12 +134,10 @@ struct CommandLineHandlerBase::Impl
             logger,
             "library features:\n"
             "  Instruction sets              %s\n"
-            "  Disney material with SeExpr   %s\n"
             "  Embree                        %s\n"
             "  Spectral support              %s\n"
             "  GPU support                   %s",
             Appleseed::get_lib_cpu_features(),
-            to_enabled_disabled(WithDisneyMaterial),
             to_enabled_disabled(WithEmbree),
             to_enabled_disabled(WithSpectralSupport),
             to_enabled_disabled(WithGPUSupport));

@@ -58,10 +58,10 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/indenter.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
+#include "foundation/log/log.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/xmlelement.h"
 
 // Standard headers.
@@ -102,7 +102,7 @@ namespace
             metadata.strings().remove("name");
 
             Dictionary wrapped_metadata;
-            wrapped_metadata.insert(name, metadata);
+            wrapped_metadata.insert(name.c_str(), metadata);
 
             write_dictionary(wrapped_metadata, file, indenter);
         }

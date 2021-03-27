@@ -37,13 +37,13 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/kernel/texturing/texturestore.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -68,7 +68,6 @@ CPURenderDevice::CPURenderDevice(
 
     RENDERER_LOG_DEBUG("creating oiio texture system...");
     m_texture_system = OIIOTextureSystemFactory::create(false);
-    m_texture_system->attribute("automip", 0);
     m_texture_system->attribute("accept_untiled", 1);
     m_texture_system->attribute("accept_unmipped", 1);
     m_texture_system->attribute("gray_to_rgb", 1);

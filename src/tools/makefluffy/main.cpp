@@ -47,8 +47,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
@@ -357,9 +357,8 @@ int main(int argc, char* argv[])
         / "project.xsd";
 
     // Read the input project from disk.
-    ProjectFileReader reader;
     auto_release_ptr<Project> project(
-        reader.read(
+        ProjectFileReader::read(
             input_filepath.c_str(),
             schema_filepath.string().c_str()));
 

@@ -76,17 +76,17 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/root.h"
 #include "foundation/math/scalar.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -199,22 +199,36 @@ namespace
             }
         }
 
+        // Move a key from one dictionary to another at a given path.
+        static void move_if_exist(
+            ParamArray&         dest,
+            const char*         dest_path,
+            ParamArray&         src,
+            const char*         src_path)
+        {
+            if (src.exist_path(src_path))
+            {
+                dest.insert_path(dest_path, src.get_path(src_path));
+                src.remove_path(src_path);
+            }
+        }
+
         // Move a key to a new path in the same parameter array.
         static void move_if_exist(
             ParamArray&         params,
             const char*         dest_path,
-            const char*         src_key)
+            const char*         src_path)
         {
-            move_if_exist(params, dest_path, params, src_key);
+            move_if_exist(params, dest_path, params, src_path);
         }
 
         // Helper function, same functionality as above.
         static void move_if_exist(
             Entity&             entity,
             const char*         dest_path,
-            const char*         src_key)
+            const char*         src_path)
         {
-            move_if_exist(entity.get_parameters(), dest_path, src_key);
+            move_if_exist(entity.get_parameters(), dest_path, src_path);
         }
     };
 
@@ -550,7 +564,7 @@ namespace
 
                     if (color)
                     {
-                        const ColorSource source(*color);
+                        const ColorSource source(*color, InputFormat::SpectralReflectance);
 
                         float mdf_param_value;
                         source.evaluate_uniform(mdf_param_value);
@@ -733,7 +747,7 @@ namespace
                 const std::string material_name = mappings.begin().value();
 
                 mappings.clear();
-                mappings.insert(slot_name, material_name);
+                mappings.insert(slot_name.c_str(), material_name);
             }
         }
     };
@@ -1308,9 +1322,6 @@ namespace
         {
             for (BSDF& bsdf : assembly.bsdfs())
                 update_bsdf_inputs(bsdf);
-
-            for (Material& material : assembly.materials())
-                update_material_inputs(material);
         }
 
         static void update_bsdf_inputs(BSDF& bsdf)
@@ -1324,23 +1335,6 @@ namespace
                     params.insert("roughness", 0.5f);
                 if (!params.strings().exist("sheen_tint"))
                     params.insert("sheen_tint", 0.5f);
-            }
-        }
-
-        static void update_material_inputs(Material& material)
-        {
-            // Don't rely on DisneyMaterialFactory().get_model() because appleseed needs
-            // to be able to update projects even when built without Disney material support
-            // (i.e. the APPLESEED_WITH_DISNEY_MATERIAL preprocessor symbol is undefined).
-            if (strcmp(material.get_model(), "disney_material") == 0)
-            {
-                ParamArray& params = material.get_parameters();
-                for (DictionaryDictionary::iterator& i : params.dictionaries())
-                {
-                    Dictionary& layer_params = i.value();
-                    if (!layer_params.strings().exist("roughness"))
-                        layer_params.insert("roughness", 0.5f);
-                }
             }
         }
     };
@@ -2318,6 +2312,31 @@ namespace
             params.strings().remove("ray_bias_distance");
         }
     };
+
+
+    //
+    // Update from revision 33 to revision 34.
+    //
+
+    class UpdateFromRevision_33
+      : public Updater
+    {
+      public:
+        UpdateFromRevision_33(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 33)
+        {
+        }
+
+        void update() override
+        {
+            for (Configuration& configuration : m_project.configurations())
+            {
+                ParamArray& root = configuration.get_parameters();
+                move_if_exist(root, "sppm.initial_photon_lookup_radius", "sppm.initial_radius");
+                root.insert_path("sppm.enable_importons", false);
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -2383,6 +2402,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(30);
       CASE_UPDATE_FROM_REVISION(31);
       CASE_UPDATE_FROM_REVISION(32);
+      CASE_UPDATE_FROM_REVISION(33);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

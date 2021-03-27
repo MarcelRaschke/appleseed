@@ -38,10 +38,10 @@
 #include "renderer/modeling/color/colorspace.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cstddef>
@@ -74,7 +74,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                aov_components.m_albedo.to_rgb(g_std_lighting_conditions);
+                aov_components.m_albedo.reflectance_to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }

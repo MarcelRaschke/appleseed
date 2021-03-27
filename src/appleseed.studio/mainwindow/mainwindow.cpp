@@ -40,13 +40,13 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "widgets/logwidget.h"
+#include "widgets/renderwidget.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -62,16 +62,16 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
+#include "foundation/log/logmessage.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log/logmessage.h"
 
 // Qt headers.
 #include <QAction>
@@ -456,16 +456,13 @@ void MainWindow::build_override_shading_menu_item()
 
         QAction* action = new QAction(this);
         action->setObjectName(
-            QString::fromUtf8("action_diagnostics_override_shading_") + shading_mode_value);
+            QString("action_diagnostics_override_shading_") + shading_mode_value);
         action->setCheckable(true);
         action->setText(shading_mode_name);
 
         const int shortcut_number = i + 1;
         if (shortcut_number <= 9)
-        {
-            action->setShortcut(
-                QKeySequence(QString::fromUtf8("Ctrl+Shift+%1").arg(shortcut_number)));
-        }
+            action->setShortcut(QKeySequence(QString("Ctrl+Shift+%1").arg(shortcut_number)));
 
         action->setData(shading_mode_value);
 
@@ -1405,8 +1402,6 @@ void MainWindow::slot_open_project()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         open_project_async(filepath);
         update_recent_files_menu(filepath);
     }
@@ -1523,8 +1518,6 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         save_project(filepath);
     }
 }
@@ -1726,6 +1719,7 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 
 void MainWindow::slot_rendering_end()
 {
+    // todo: ideally we wouldn't apply false colors when aborting a final render.
     apply_false_colors_settings();
 
     update_workspace();
@@ -2144,9 +2138,8 @@ void MainWindow::slot_check_fullscreen()
 {
     const QList<QDockWidget*> dock_widgets = findChildren<QDockWidget*>();
 
-    const bool is_fullscreen = std::all_of(dock_widgets.cbegin(),
-                                      dock_widgets.cend(),
-                                      [](QDockWidget* dock) {return dock->isHidden();});
+    const bool is_fullscreen =
+        std::all_of(std::begin(dock_widgets), std::end(dock_widgets), [](QDockWidget* dock) { return dock->isHidden(); });
 
     m_action_fullscreen->setChecked(is_fullscreen);
 }

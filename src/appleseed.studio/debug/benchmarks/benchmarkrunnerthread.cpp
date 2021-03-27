@@ -34,10 +34,10 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"

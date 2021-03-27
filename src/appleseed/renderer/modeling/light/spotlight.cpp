@@ -39,6 +39,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
@@ -46,7 +47,6 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -78,9 +78,9 @@ namespace
             const ParamArray&       params)
           : Light(name, params)
         {
-            m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("intensity", InputFormat::Float);
+            m_inputs.declare("intensity_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("exposure", InputFormat::Float, "0.0");
         }
 
         void release() override

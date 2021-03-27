@@ -37,14 +37,14 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/mesh/genericmeshfilereader.h"
-#include "foundation/mesh/genericmeshfilewriter.h"
-#include "foundation/mesh/imeshbuilder.h"
-#include "foundation/mesh/imeshwalker.h"
+#include "foundation/meshio/genericmeshfilereader.h"
+#include "foundation/meshio/genericmeshfilewriter.h"
+#include "foundation/meshio/imeshbuilder.h"
+#include "foundation/meshio/imeshwalker.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Standard headers.
 #include <cstddef>

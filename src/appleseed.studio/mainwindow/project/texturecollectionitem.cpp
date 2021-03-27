@@ -45,7 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
@@ -141,13 +141,10 @@ void TextureCollectionItem::slot_import_textures()
     if (filepaths.empty())
         return;
 
-    const bf::path path(
-        QDir::toNativeSeparators(filepaths.first()).toStdString());
-
     // todo: schedule creation of texture and texture instances when rendering.
     for (int i = 0; i < filepaths.size(); ++i)
     {
-        const std::string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();
+        const std::string filepath = filepaths[i].toStdString();
 
         auto_release_ptr<Texture> texture = create_texture(filepath);
         auto_release_ptr<TextureInstance> texture_instance = create_texture_instance(texture->get_name());

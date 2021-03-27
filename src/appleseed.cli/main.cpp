@@ -48,15 +48,15 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/console.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // appleseed.main headers.
@@ -67,6 +67,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
@@ -296,7 +297,7 @@ namespace
             const std::string value = s.substr(equal_pos + 1);
 
             // Insert the parameter.
-            params.insert_path(path, value);
+            params.insert_path(path.c_str(), value);
         }
     }
 
@@ -490,9 +491,8 @@ namespace
             / "project.xsd";
 
         // Load the project from disk.
-        ProjectFileReader reader;
         return
-            reader.read(
+            ProjectFileReader::read(
                 project_filepath.c_str(),
                 schema_filepath.string().c_str());
     }

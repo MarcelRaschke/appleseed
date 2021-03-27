@@ -37,16 +37,15 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -93,7 +92,7 @@ namespace
               case Projection::EquisolidAngle:
                 projection_type = "equisolid angle";
                 break;
-                
+
               case Projection::Equidistant:
                 projection_type = "equidistant";
                 break;
@@ -189,10 +188,10 @@ namespace
             {
                 const Vector2d px(ndc.get_value() + ndc.get_dx());
                 const Vector2d py(ndc.get_value() + ndc.get_dy());
-                ray.m_rx.m_org = ray.m_org;
-                ray.m_ry.m_org = ray.m_org;
-                ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
-                ray.m_ry.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
+                ray.m_rx_org = ray.m_org;
+                ray.m_ry_org = ray.m_org;
+                ray.m_rx_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
+                ray.m_ry_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
                 ray.m_has_differentials = true;
             }
         }
@@ -236,49 +235,49 @@ namespace
       private:
         enum class Projection
         {
-            EquisolidAngle, 
-            Equidistant, 
-            Stereographic, 
+            EquisolidAngle,
+            Equidistant,
+            Stereographic,
             Thoby
         };
 
         Projection m_projection_type;
 
         //
-        //                    |  axis 
+        //                    |  axis
         //                    |
         //        #-----------------------------------  _
         //       # \                                ^ \  \.
         //      #   \                             ^    \  \ radius_2
-        //     #     \        |                 ^       \  \. 
-        //    #       \                       ^          \  \. 
-        //    #        \                    ^             \  \. 
+        //     #     \        |                 ^       \  \.
+        //    #       \                       ^          \  \.
+        //    #        \                    ^             \  \.
         //   #         *------------------^----------------\  \. _
-        //   #        *  \    |         ^   )           ""  \  \  \. 
+        //   #        *  \    |         ^   )           ""  \  \  \.
         //   #       *    \           ^       )    ""        \  \  \ radius_1
-        //   #      *      \        ^        "")              \  \  \. 
-        //   #      *       \     ^   ""       ) theta_2       \  \  \. 
+        //   #      *      \        ^        "")              \  \  \.
+        //   #      *       \     ^   ""       ) theta_2       \  \  \.
         //   #      *        \| ^"  ) theta_1 )                 \  _  _
         //   #      *         o--------------------------------------------------> axis
         //    #      *       /                                   |
         //     #      *     /                               m_focal_length
-        //      #      *   / 
+        //      #      *   /
         //       #      * / radius_1                                """""""" : Direction 1.
         //        #      /                                          ^^^^^^^^ : Direction 2.
-        //          #   /   
+        //          #   /
         //            #/ radius_2
         //            /
         //           /
         //          /  axis
         //
         //
-        // Fisheye lens is implemented in a way to distort ray direction in pinhole 
-        // camera. Direction 1 is same as ray direction in perspective camera. It 
-        // represents direction to NDC. Direction 2 is distorted ray direction to render 
+        // Fisheye lens is implemented in a way to distort ray direction in pinhole
+        // camera. Direction 1 is same as ray direction in perspective camera. It
+        // represents direction to NDC. Direction 2 is distorted ray direction to render
         // in fisheye lens camera. It represents actual ray direction in camera space.
         //
 
-        // Transforms ray direction from 1 to 2. 
+        // Transforms ray direction from 1 to 2.
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
             const double x = (0.5 - point.x) * m_film_dimensions[0];
@@ -290,12 +289,12 @@ namespace
             const double tan_theta_1 = radius_1 / m_focal_length;
             double theta_2 = 0.0;
 
-            switch (m_projection_type) 
+            switch (m_projection_type)
             {
               case Projection::EquisolidAngle:
                 theta_2 = 2.0 * std::asin(tan_theta_1 * 0.5);
                 break;
-                
+
               case Projection::Equidistant:
                 theta_2 = tan_theta_1;
                 break;
@@ -321,26 +320,26 @@ namespace
                     m_focal_length);
         }
 
-        // Transforms ray direction from 2 to 1. 
+        // Transforms ray direction from 2 to 1.
         Vector2d camera_to_ndc(const Vector3d& point) const
         {
             const double k = m_focal_length / point.z;
-            
+
             const double x = 0.5 - (point.x * k * m_rcp_film_width);
             const double y = 0.5 + (point.y * k * m_rcp_film_height);
-            
+
             const double radius_2 = std::sqrt(x * x + y * y);
             const double rcp_radius_2 = 1.0 / radius_2;
-            
+
             const double theta_2 = std::atan(radius_2 / m_focal_length);
             double tan_theta_1 = 0.0;
 
-            switch (m_projection_type) 
+            switch (m_projection_type)
             {
               case Projection::EquisolidAngle:
                 tan_theta_1 = 2.0 * std::sin(theta_2 * 0.5);
                 break;
-                
+
               case Projection::Equidistant:
                 tan_theta_1 = theta_2;
                 break;

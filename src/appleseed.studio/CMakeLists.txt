@@ -108,6 +108,12 @@ set (main_sources
     main/commandlinehandler.h
     main/main.cpp
 )
+if (WIN32)
+    set (main_sources
+        ${main_sources}
+        main/windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.studio_sources
     ${main_sources}
 )
@@ -202,17 +208,6 @@ set (mainwindow_project_sources
     mainwindow/project/tools.cpp
     mainwindow/project/tools.h
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND mainwindow_project_sources
-        mainwindow/project/expressioneditorwindow.cpp
-        mainwindow/project/expressioneditorwindow.h
-        mainwindow/project/expressioneditorwindow.ui
-        mainwindow/project/disneymaterialcustomui.cpp
-        mainwindow/project/disneymaterialcustomui.h
-        mainwindow/project/disneymateriallayerui.cpp
-        mainwindow/project/disneymateriallayerui.h
-    )
-endif ()
 list (APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
 )
@@ -270,8 +265,6 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderregionhandler.h
     mainwindow/rendering/rendertab.cpp
     mainwindow/rendering/rendertab.h
-    mainwindow/rendering/renderwidget.cpp
-    mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
 )
@@ -502,10 +495,6 @@ target_link_libraries (appleseed.studio
     ${PYTHON_LIBRARIES}
 )
 
-if (WITH_DISNEY_MATERIAL)
-    link_against_seexpreditor (appleseed.studio)
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
@@ -546,13 +535,9 @@ install (DIRECTORY ../../sandbox/ocio
     DESTINATION .
 )
 
-install (DIRECTORY ../../sandbox/seexpr
-    DESTINATION .
-)
-
 install (DIRECTORY ../../sandbox/studio
     DESTINATION .
 )
 
-install (DIRECTORY ../../sandbox/lib/python/site-packages DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}")
-install (DIRECTORY python/studio DESTINATION "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
+install (DIRECTORY ../../sandbox/lib/python/site-packages DESTINATION "lib/python")
+install (DIRECTORY python/studio DESTINATION "lib/python/appleseed")

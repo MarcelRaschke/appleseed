@@ -41,8 +41,8 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -66,8 +66,8 @@ namespace
             const ParamArray&       params)
           : Material(name, params)
         {
-            m_inputs.declare("osl_surface", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatFloat, "");
+            m_inputs.declare("osl_surface", InputFormat::Entity, "");
+            m_inputs.declare("alpha_map", InputFormat::Float, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
             m_osl_bssrdf = OSLBSSRDFFactory().create();
@@ -200,6 +200,7 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
             .insert("use", "optional"));
 
     add_alpha_map_metadata(metadata);
+    add_default_tangent_mode_metadata(metadata);
 
     return metadata;
 }

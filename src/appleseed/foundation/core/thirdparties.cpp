@@ -30,7 +30,7 @@
 #include "thirdparties.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/version.hpp"
@@ -49,7 +49,9 @@
 #include <lz4.h>
 
 // OpenColorIO headers.
+#ifdef APPLESEED_WITH_OCIO
 #include <OpenColorIO/OpenColorABI.h>
+#endif
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
@@ -92,7 +94,6 @@ LibraryVersionArray ThirdParties::get_versions()
     static const char* BCDVersion = "v1.1";
     static const char* LibJpegTurboVersion = "1.3.1";
     static const char* LibTIFFVersion = "4.0.3";
-    static const char* SeExprVersion = "appleseedhq/SeExpr, qt5-appleseed branch, commit 8a3d1cd";
 
     LibraryVersionArray versions;
 
@@ -116,15 +117,17 @@ LibraryVersionArray ThirdParties::get_versions()
     }
 #endif
 
+#ifdef APPLESEED_WITH_OCIO
+    versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
+#endif
+
     versions.push_back(APIStringPair("IlmBase", ILMBASE_VERSION_STRING));
     versions.push_back(APIStringPair("libjpeg-turbo", LibJpegTurboVersion));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
     versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));
-    versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
     versions.push_back(APIStringPair("OpenEXR", OPENEXR_VERSION_STRING));
     versions.push_back(APIStringPair("OpenImageIO", OIIO_VERSION_STRING));
     versions.push_back(APIStringPair("OpenShadingLanguage", OSL_LIBRARY_VERSION_STRING));
-    versions.push_back(APIStringPair("SeExpr", SeExprVersion));
     versions.push_back(APIStringPair("Xerces-C++", XERCES_FULLVERSIONDOT));
     versions.push_back(APIStringPair("zlib", ZLIB_VERSION));
 

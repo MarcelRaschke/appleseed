@@ -32,8 +32,7 @@
 #include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

@@ -48,10 +48,10 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/log/log.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -201,9 +201,8 @@ namespace
 
             // Read the master project file.
             const char* project_filepath = g_cl.m_filenames.values()[0].c_str();
-            ProjectFileReader reader;
             auto_release_ptr<Project> project(
-                reader.read(
+                ProjectFileReader::read(
                     project_filepath,
                     schema_filepath.string().c_str()));
 

@@ -38,13 +38,13 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -75,8 +75,8 @@ namespace
             const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("upper_hemi_radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("lower_hemi_radiance", InputFormatSpectralIlluminance);
+            m_inputs.declare("upper_hemi_radiance", InputFormat::SpectralIlluminance);
+            m_inputs.declare("lower_hemi_radiance", InputFormat::SpectralIlluminance);
         }
 
         void release() override

@@ -60,14 +60,14 @@
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/arch.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -497,7 +497,7 @@ namespace
             size_t tile_converged_pixel_count = 0;
             float average_noise_level = 0.0f;
             const float normalizing_factor = 1.0f / m_params.m_noise_threshold;
-            
+
             for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = rendering_blocks[i];
@@ -700,7 +700,7 @@ namespace
                 if (m_invalid_sample_count <= MaxWarningsPerThread)
                 {
                     RENDERER_LOG_WARNING(
-                        "%s sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
+                        "%s sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
                         pretty_uint(m_invalid_sample_count).c_str(),
                         m_invalid_sample_count > 1 ? "s" : "",
                         pi.x, pi.y,

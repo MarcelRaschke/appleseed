@@ -31,15 +31,12 @@
 #include "qtlogtarget.h"
 
 // appleseed.qtcommon headers.
-#include "utility/interop.h"
 #include "widgets/logwidget.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
-
-// Standard headers.
-#include <vector>
+// Qt headers.
+#include <QColor>
+#include <QString>
+#include <QStringList>
 
 using namespace foundation;
 
@@ -53,8 +50,8 @@ namespace qtcommon {
 QtLogTarget::QtLogTarget(LogWidget* log_widget)
 {
     connect(
-        this, SIGNAL(signal_append_item(const QColor&, const QString&)),
-        log_widget, SLOT(slot_append_item(const QColor&, const QString&)));
+        this, &QtLogTarget::signal_append_item,
+        log_widget, &LogWidget::slot_append_item);
 }
 
 void QtLogTarget::release()
@@ -88,21 +85,15 @@ namespace
 void QtLogTarget::write(
     const LogMessage::Category  category,
     const char*                 file,
-    const size_t                line_number,
+    const std::size_t           line_number,
     const char*                 header,
     const char*                 message)
 {
     const QColor color = get_text_color_for_category(category);
     const QString header_string(header);
 
-    std::vector<QString> lines;
-    split(message, "\n", lines);
-
-    for (const_each<std::vector<QString>> i = lines; i; ++i)
-    {
-        const QString line = header_string + *i + "\n";
-        emit signal_append_item(color, line);
-    }
+    for (const QString& line : QString(message).split('\n'))
+        emit signal_append_item(color, header_string + line + "\n");
 }
 
 }   // namespace qtcommon

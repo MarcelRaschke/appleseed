@@ -37,28 +37,24 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
-#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/microfacet.h"
-#include "foundation/math/minmax.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -91,6 +87,7 @@ namespace
     //
 
     const char* Model = "glossy_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_glossy_brdf";
 
     class GlossyBRDFImpl
       : public BSDF
@@ -101,13 +98,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("ior", InputFormatFloat, "1.5");
-            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("energy_compensation", InputFormatFloat, "0.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.15");
+            m_inputs.declare("anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("ior", InputFormat::Float, "1.5");
+            m_inputs.declare("fresnel_weight", InputFormat::Float, "1.0");
+            m_inputs.declare("energy_compensation", InputFormat::Float, "0.0");
         }
 
         void release() override
@@ -181,8 +178,9 @@ namespace
                     alpha_x,
                     alpha_y);
 
-                MicrofacetBRDFHelper<GGXMDF, true>::sample(
+                MicrofacetBRDFHelper<GGXMDF>::sample(
                     sampling_context,
+                    values->m_roughness,
                     alpha_x,
                     alpha_y,
                     f,
@@ -234,7 +232,7 @@ namespace
                 values->m_fresnel_weight);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::evaluate(
+                MicrofacetBRDFHelper<GGXMDF>::evaluate(
                     alpha_x,
                     alpha_y,
                     f,
@@ -276,7 +274,7 @@ namespace
                 alpha_y);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::pdf(
+                MicrofacetBRDFHelper<GGXMDF>::pdf(
                     alpha_x,
                     alpha_y,
                     local_geometry,
@@ -315,7 +313,20 @@ namespace
         }
     };
 
+    class MicrofacetGlossyBRDFImpl
+      : public GlossyBRDFImpl
+    {
+      public:
+        using GlossyBRDFImpl::GlossyBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetGlossyBRDFImpl> MicrofacetGlossyBRDF;
 }
 
 
@@ -467,6 +478,31 @@ auto_release_ptr<BSDF> GlossyBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
+}
+
+
+//
+// MicrofacetGlossyBRDFFactory class implementation.
+//
+
+const char* MicrofacetGlossyBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetGlossyBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Glossy BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetGlossyBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetGlossyBRDF(name, params));
 }
 
 }   // namespace renderer

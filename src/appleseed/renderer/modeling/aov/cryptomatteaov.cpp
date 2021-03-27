@@ -40,6 +40,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -48,15 +49,14 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"
@@ -870,10 +870,10 @@ bool CryptomatteAOV::write_images(
 
     ImageAttributes image_attributes_copy(image_attributes);
     image_attributes_copy.insert("color_space", "linear");
-    image_attributes_copy.insert(layer_prefix + "/name", layer_name);
-    image_attributes_copy.insert(layer_prefix + "/hash", "MurmurHash3_32");
-    image_attributes_copy.insert(layer_prefix + "/conversion", "uint32_to_float32");
-    image_attributes_copy.insert(layer_prefix + "/manifest", manifest);
+    image_attributes_copy.insert(std::string(layer_prefix + "/name").c_str(), layer_name);
+    image_attributes_copy.insert(std::string(layer_prefix + "/hash").c_str(), "MurmurHash3_32");
+    image_attributes_copy.insert(std::string(layer_prefix + "/conversion").c_str(), "uint32_to_float32");
+    image_attributes_copy.insert(std::string(layer_prefix + "/manifest").c_str(), manifest);
 
     const size_t channel_count = impl->get_channel_count();
     const std::vector<std::string> channel_names = impl->make_channel_names(layer_name);

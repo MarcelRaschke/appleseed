@@ -48,7 +48,7 @@
 #include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
@@ -96,7 +96,6 @@ namespace
 //
 
 EntityBrowser<Project>::EntityBrowser(const Project& project)
-  : m_project(project)
 {
 }
 

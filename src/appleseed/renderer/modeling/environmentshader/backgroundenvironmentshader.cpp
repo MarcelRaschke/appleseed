@@ -39,10 +39,10 @@
 #include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
 namespace renderer  { class AOVComponents; }
@@ -70,8 +70,8 @@ namespace
             const ParamArray&       params)
           : EnvironmentShader(name, params)
         {
-            m_inputs.declare("color", InputFormatSpectralIlluminance);
-            m_inputs.declare("alpha", InputFormatFloat, "1.0");
+            m_inputs.declare("color", InputFormat::SpectralIlluminance);
+            m_inputs.declare("alpha", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -101,7 +101,7 @@ namespace
                 SourceInputs(uv),
                 &values);
 
-            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
+            shading_result.m_main.rgb() = values.m_color.illuminance_to_rgb(g_std_lighting_conditions);
             shading_result.m_main.a = values.m_alpha;
         }
 

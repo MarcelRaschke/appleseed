@@ -30,8 +30,8 @@
 // Interface header.
 #include "qttilecallback.h"
 
-// appleseed.bench headers.
-#include "mainwindow/rendering/renderwidget.h"
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // Qt headers.
 #include <Qt>
@@ -39,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -53,8 +54,8 @@ QtTileCallback::QtTileCallback(RenderWidget* render_widget)
   : m_render_widget(render_widget)
 {
     connect(
-        this, SIGNAL(signal_update()),
-        m_render_widget, SLOT(update()),
+        this, &QtTileCallback::signal_update,
+        m_render_widget, static_cast<void (QWidget::*)(void)>(&QWidget::update),
         Qt::QueuedConnection);
 }
 
@@ -66,10 +67,12 @@ void QtTileCallback::release()
 void QtTileCallback::on_tile_begin(
     const Frame*            frame,
     const size_t            tile_x,
-    const size_t            tile_y)
+    const size_t            tile_y,
+    const size_t            thread_index,
+    const size_t            thread_count)
 {
     assert(m_render_widget);
-    m_render_widget->highlight_tile(*frame, tile_x, tile_y);
+    m_render_widget->highlight_tile(*frame, tile_x, tile_y, thread_index, thread_count);
 
     emit signal_update();
 }

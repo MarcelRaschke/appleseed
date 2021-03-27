@@ -45,6 +45,7 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/canvasproperties.h"
@@ -55,15 +56,14 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"

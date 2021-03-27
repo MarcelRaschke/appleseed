@@ -162,8 +162,6 @@ void LightPathsTab::slot_save_light_paths()
     if (QFileInfo(filepath).suffix().isEmpty())
         filepath += ".aspaths";
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     // Write light paths to disk.
     m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
 }
@@ -282,7 +280,7 @@ void LightPathsTab::create_scrollarea()
 
     // Wrap the OpenGL widget in a scroll area.
     m_scroll_area = new QScrollArea();
-    m_scroll_area->setObjectName(QString::fromUtf8("render_widget_scrollarea"));
+    m_scroll_area->setObjectName("render_widget_scrollarea");
     m_scroll_area->setAlignment(Qt::AlignCenter);
     m_scroll_area->setWidget(gl_widget_wrapper);
 }

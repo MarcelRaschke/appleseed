@@ -48,9 +48,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/math/scalar.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -258,6 +258,14 @@ namespace
             QFont font;
             font.setBold(true);
             label->setFont(font);
+        }
+
+        if (metadata.strings().exist("help"))
+        {
+            // Add tooltip if a help string has been set.
+            const std::string help = metadata.strings().get<std::string>("help");
+            if (!help.empty())
+                label->setToolTip(QString::fromStdString(help));
         }
 
         return label;
@@ -743,7 +751,7 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
 
         if (!filepath.isEmpty())
         {
-            widget_proxy->set(QDir::toNativeSeparators(filepath).toStdString());
+            widget_proxy->set(filepath.toStdString());
             widget_proxy->emit_signal_changed();
         }
     }

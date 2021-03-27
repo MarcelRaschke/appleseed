@@ -39,16 +39,15 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -74,8 +73,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
-            m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("transmittance", InputFormat::SpectralReflectance);
+            m_inputs.declare("transmittance_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -145,6 +144,7 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
 
                 sample.m_min_roughness = 1.0f;
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 

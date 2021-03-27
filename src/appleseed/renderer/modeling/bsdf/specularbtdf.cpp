@@ -38,15 +38,14 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
@@ -73,14 +72,14 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("ior", InputFormatFloat);
-            m_inputs.declare("volume_density", InputFormatFloat, "0.0");
-            m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("transmittance", InputFormat::SpectralReflectance);
+            m_inputs.declare("transmittance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("ior", InputFormat::Float);
+            m_inputs.declare("volume_density", InputFormat::Float, "0.0");
+            m_inputs.declare("volume_scale", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -204,8 +203,14 @@ namespace
 
             // Compute the ray differentials.
             if (refract_differentials)
-                sample.compute_transmitted_differentials(local_geometry, values->m_precomputed.m_eta, outgoing);
-            else sample.compute_reflected_differentials(local_geometry, outgoing);
+            {
+                sample.compute_specular_transmitted_differentials(
+                    local_geometry,
+                    values->m_precomputed.m_eta,
+                    local_geometry.m_shading_point->is_entering(),
+                    outgoing);
+            }
+            else sample.compute_specular_reflected_differentials(local_geometry, outgoing);
         }
 
         float evaluate(

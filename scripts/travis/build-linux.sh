@@ -40,7 +40,7 @@ THISDIR=`pwd`
 echo "travis_fold:start:deps"
 echo "Downloading and unpacking dependencies..."
 
-curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1/appleseed-deps-shared-2.1.tgz" > deps.tgz
+curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
 tar xfz deps.tgz
 rm deps.tgz
 
@@ -65,7 +65,7 @@ export CMAKE_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib
 #--------------------------------------------------------------------------------------------------
 
 export LD_LIBRARY_PATH=$APPLESEED_DEPENDENCIES/lib:$LD_LIBRARY_PATH
-export PYTHONPATH=$PYTHONPATH:sandbox/lib/Debug/python
+export PYTHONPATH=$PYTHONPATH:sandbox/lib/$BUILD_TYPE/python
 
 
 #--------------------------------------------------------------------------------------------------
@@ -78,11 +78,9 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
-# Disney material support is not enabled because Travis/Linux (Xenial) has Qt 5.5.1
-# while libSeExprEditor.so from the linux-deps package was built against Qt 5.12.0.
 cmake \
     -Wno-dev \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
     -DWITH_EMBREE=ON \
     -DUSE_SSE42=ON \
@@ -126,7 +124,7 @@ echo "travis_fold:end:build"
 echo "travis_fold:start:unit-tests"
 echo "Running appleseed unit tests..."
 
-sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
+sandbox/bin/$BUILD_TYPE/appleseed.cli --run-unit-tests --verbose-unit-tests
 
 echo "travis_fold:end:unit-tests"
 
@@ -138,7 +136,7 @@ echo "travis_fold:end:unit-tests"
 echo "travis_fold:start:python-unit-tests"
 echo "Running appleseed.python unit tests..."
 
-python sandbox/lib/Debug/python/appleseed/test/runtests.py
+python sandbox/lib/$BUILD_TYPE/python/appleseed/test/runtests.py
 
 echo "travis_fold:end:python-unit-tests"
 

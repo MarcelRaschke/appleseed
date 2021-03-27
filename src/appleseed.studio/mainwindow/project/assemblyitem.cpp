@@ -64,7 +64,7 @@
 #include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -101,7 +101,7 @@ AssemblyItem::AssemblyItem(
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
-    set_title(QString::fromUtf8(assembly.get_name()));
+    set_title(assembly.get_name());
 
     set_allow_edition(false);
 
@@ -185,7 +185,6 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create Volume...", m_volume_collection_item, SLOT(slot_create()));
 
     QMenu* submenu = menu->addMenu("Create Material...");
-    submenu->addAction("Create Disney Material...", m_material_collection_item, SLOT(slot_create_disney()));
     submenu->addAction("Create Generic Material...", m_material_collection_item, SLOT(slot_create_generic()));
 
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));

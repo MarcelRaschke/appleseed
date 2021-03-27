@@ -34,17 +34,17 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/intersection/rayparallelogram.h"
 #include "foundation/math/intersection/rayplane.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 using namespace foundation;
 

@@ -34,7 +34,7 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -85,6 +85,27 @@ class APPLESEED_DLLSYMBOL BlinnBRDFFactory
 
     // Return metadata for the inputs of this BSDF model.
     foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new BSDF instance.
+    foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+
+//
+// Microfacet Blinn BRDF factory.
+//
+
+class APPLESEED_DLLSYMBOL MicrofacetBlinnBRDFFactory
+  : public BlinnBRDFFactory
+{
+  public:
+    // Return a string identifying this BSDF model.
+    const char* get_model() const override;
+
+    // Return metadata for this BSDF model.
+    foundation::Dictionary get_model_metadata() const override;
 
     // Create a new BSDF instance.
     foundation::auto_release_ptr<BSDF> create(

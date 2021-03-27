@@ -34,8 +34,8 @@
 #include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -59,12 +59,12 @@ namespace
             const ParamArray&       params)
           : Material(name, params)
         {
-            m_inputs.declare("bsdf", InputFormatEntity, "");
-            m_inputs.declare("bssrdf", InputFormatEntity, "");
-            m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatFloat, "");
-            m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
-            m_inputs.declare("volume", InputFormatEntity, "");
+            m_inputs.declare("bsdf", InputFormat::Entity, "");
+            m_inputs.declare("bssrdf", InputFormat::Entity, "");
+            m_inputs.declare("edf", InputFormat::Entity, "");
+            m_inputs.declare("alpha_map", InputFormat::Float, "");
+            m_inputs.declare("displacement_map", InputFormat::SpectralReflectance, "");
+            m_inputs.declare("volume", InputFormat::Entity, "");
         }
 
         void release() override
@@ -98,6 +98,14 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "%smaterial is emitting light but may be partially or entirely transparent; "
+                    "this may lead to unexpected or unphysical results.",
+                    context.get());
+            }
+
+            if  (m_render_data.m_volume && m_render_data.m_alpha_map)
+            {
+                RENDERER_LOG_WARNING(
+                    "%smaterial is assigned an alpha map and a volume at the same time; "
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
@@ -171,6 +179,7 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     add_alpha_map_metadata(metadata);
     add_displacement_metadata(metadata);
+    add_default_tangent_mode_metadata(metadata);
 
     return metadata;
 }

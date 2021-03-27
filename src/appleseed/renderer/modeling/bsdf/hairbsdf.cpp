@@ -37,23 +37,16 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
-#include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/utility/dynamicspectrum.h"
-#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/minmax.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/specialfunctions.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
@@ -61,7 +54,6 @@
 #include <cmath>
 #include <cstddef>
 #include <numeric>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -69,7 +61,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -140,7 +131,7 @@ namespace
         const float exp_arg = sin_theta_i * sin_theta_o / v;
 
         // Low roughness values lead to precision issues
-        // in the longitudinal integral. 
+        // in the longitudinal integral.
         // https://publons.com/review/414383/
 
         if (v <= 0.1f)
@@ -159,7 +150,7 @@ namespace
     }
 
     //
-    // Sampling function for longitudinal scattering. 
+    // Sampling function for longitudinal scattering.
     //
 
     float sample_longitudinal(const float sin_tilt, const float cos_tilt, const float v, const Vector2f sample_M)
@@ -180,7 +171,7 @@ namespace
     {
         return std::accumulate(retAp.begin(), retAp.end(), 0.0f, [](float s, const Spectrum& ap)
         {
-            return s + luminance(ap.to_rgb(g_std_lighting_conditions));
+            return s + luminance(ap.illuminance_to_rgb(g_std_lighting_conditions));
         });
     }
 
@@ -195,27 +186,37 @@ namespace
         const Spectrum&             T,
         std::array<Spectrum, 4>&    ret)
     {
-        
-        // R(Primary Specular). 
-        const float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
-        const float cosTheta = cosGammaO * cos_theta_o;
+
+        // R (Primary Specular).
+        const float cos_gamma_o = std::sqrt(std::max(0.0f, 1.0f - h * h));
+        const float cos_theta = cos_gamma_o * cos_theta_o;
         float f;
-        fresnel_reflectance_dielectric(f, 1.0f / eta, cosTheta);
-        ret[0] = Spectrum(f);
+        fresnel_reflectance_dielectric(f, 1.0f / eta, cos_theta);
+        ret[0].set(f);
 
-        // TT(Transmitted component). 
-        ret[1] = (1.0f - f) * (1.0f - f) * T;
+        Spectrum Tf = T;
+        Tf *= f;
 
-        // TRT(Total internally reflected component). 
-        ret[2] = ret[1] * T * f;
+        Spectrum one_minus_Tf(1.0f);
+        one_minus_Tf -= Tf;
 
-        // Higher orders of scattering. 
-        ret[3] = ret[2] * f * T / (Spectrum(1.0f) - T * f);
+        // TT (Transmitted component).
+        ret[1] = T;
+        ret[1] *= square(1.0f - f);
+
+        // TRT (Total internally reflected component).
+        ret[2] = ret[1];
+        ret[2] *= Tf;
+
+        // Higher orders of scattering.
+        ret[3] = ret[2];
+        ret[3] *= Tf;
+        ret[3] /= one_minus_Tf;
 
     }
 
     //
-    // Method to compute a discrete pdf based on the attenuation function.
+    // Method to compute a discrete PDF based on the attenuation function.
     //
 
     void attenuation_pdf(
@@ -225,13 +226,12 @@ namespace
         const Spectrum&         T,
         std::array<float, 4>&   ret)
     {
-
         std::array<Spectrum, 4> retAp;
         attenuation(cos_theta_o, eta, h, T, retAp);
 
         const float sumY = sum_luminance(retAp);
         for (int i = 0; i <= 3; i++)
-            ret[i] = luminance(retAp[i].to_rgb(g_std_lighting_conditions)) / sumY;
+            ret[i] = luminance(retAp[i].illuminance_to_rgb(g_std_lighting_conditions)) / sumY;
     }
 
     //
@@ -304,7 +304,7 @@ namespace
 
         // TRRT+ contribution of scattering.
         bsdf_f +=
-            ap[3] * 
+            ap[3] *
             longitudinal(
                 cos_theta_i,
                 cos_theta_o,
@@ -452,13 +452,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("melanin", InputFormatFloat, "0.3");
-            m_inputs.declare("melanin_redness", InputFormatFloat, "0.0");
-            m_inputs.declare("eta", InputFormatFloat, "1.55");
-            m_inputs.declare("beta_M", InputFormatFloat, "0.3");
-            m_inputs.declare("beta_N", InputFormatFloat, "0.3");
-            m_inputs.declare("alpha", InputFormatFloat, "2.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("melanin", InputFormat::Float, "0.3");
+            m_inputs.declare("melanin_redness", InputFormat::Float, "0.0");
+            m_inputs.declare("eta", InputFormat::Float, "1.55");
+            m_inputs.declare("beta_M", InputFormat::Float, "0.3");
+            m_inputs.declare("beta_N", InputFormat::Float, "0.3");
+            m_inputs.declare("alpha", InputFormat::Float, "2.0");
         }
 
         void release() override
@@ -582,7 +582,7 @@ namespace
                     values->m_precomputed.m_v,
                     sample_M);
             }
-            if (p == 1)
+            else if (p == 1)
             {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TT),
@@ -590,7 +590,7 @@ namespace
                     values->m_precomputed.m_v * 0.25f,
                     sample_M);
             }
-            if (p == 2)
+            else
             {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TRT),
@@ -604,7 +604,7 @@ namespace
             float dphi;
             dphi = calc_phi(p, gamma_o, gamma_t) +
             sample_trimmed_logistic(sample_N[1], values->m_precomputed.m_s);
-            
+
             // Compute wi from sampled hair scattering angles.
             const float phi_i = phi_o + dphi;
             const Vector3f wi = Vector3f(sin_theta_i, cos_theta_i * std::sin(phi_i), cos_theta_i * std::cos(phi_i));
@@ -758,7 +758,7 @@ namespace
                 gamma_t,
                 ap_pdf,
                 bsdf_pdf);
-            
+
             const float angle_bsdf = std::abs(wi.y);
 
             if (angle_bsdf > 0)

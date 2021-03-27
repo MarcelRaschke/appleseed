@@ -42,6 +42,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling/mappings.h"
@@ -50,7 +51,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -95,11 +95,11 @@ namespace
             const ParamArray&       params)
           : Light(name, params)
         {
-            m_inputs.declare("environment_edf", InputFormatEntity, "");
-            m_inputs.declare("turbidity", InputFormatFloat);
-            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("distance", InputFormatFloat, "149.6");
+            m_inputs.declare("environment_edf", InputFormat::Entity, "");
+            m_inputs.declare("turbidity", InputFormat::Float);
+            m_inputs.declare("radiance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("size_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("distance", InputFormat::Float, "149.6");
         }
 
         void release() override

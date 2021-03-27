@@ -42,7 +42,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 
 // Standard headers.
 #include <cmath>
@@ -171,7 +171,7 @@ Color4f NPRSurfaceShaderHelper::evaluate_npr_contour(
     const ShadingRay& original_ray = shading_point.get_ray();
 
     const Vector3d& I = original_ray.m_dir;
-    const Vector3d dIdx = normalize(original_ray.m_rx.m_dir - I);
+    const Vector3d dIdx = normalize(original_ray.m_rx_dir - I);
     const Basis3d basis(-I, dIdx);
 
     // Construct the contour ray.

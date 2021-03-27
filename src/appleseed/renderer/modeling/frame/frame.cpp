@@ -47,6 +47,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
@@ -63,12 +64,11 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"
@@ -1328,7 +1328,7 @@ void Frame::extract_parameters()
 
     // Retrieve tile size parameter.
     {
-        const Vector2i DefaultTileSize(64, 64);
+        const Vector2i DefaultTileSize(32, 32);
         Vector2i tile_size = m_params.get_optional<Vector2i>("tile_size", DefaultTileSize);
         if (tile_size[0] < 1 || tile_size[1] < 1)
         {

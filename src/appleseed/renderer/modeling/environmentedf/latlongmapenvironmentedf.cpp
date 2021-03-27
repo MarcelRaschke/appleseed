@@ -48,6 +48,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/matrix.h"
@@ -57,12 +58,11 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -168,9 +168,9 @@ namespace
           , m_importance_map_height(0)
           , m_probability_scale(0.0f)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("radiance", InputFormat::SpectralIlluminance);
+            m_inputs.declare("radiance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("exposure", InputFormat::Float, "0.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
@@ -246,10 +246,10 @@ namespace
             shift_angles(theta, phi, m_theta_shift, m_phi_shift);
 
             // Compute the local space emission direction.
-            const float cos_theta = cos(theta);
-            const float sin_theta = sin(theta);
-            const float cos_phi = cos(phi);
-            const float sin_phi = sin(phi);
+            const float cos_theta = std::cos(theta);
+            const float sin_theta = std::sin(theta);
+            const float cos_phi = std::cos(phi);
+            const float sin_phi = std::sin(phi);
             const Vector3f local_outgoing =
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
@@ -585,7 +585,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("help", "Environment texture vertical shift in degrees"));
 
     add_common_input_metadata(metadata);
-    
+
     return metadata;
 }
 

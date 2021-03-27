@@ -50,25 +50,25 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/hash/hash.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/distance.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <cmath>
 #include <string>
 
 using namespace foundation;
@@ -271,7 +271,7 @@ namespace
         ShadingResult&  shading_result,
         const Spectrum& value)
     {
-        shading_result.m_main.rgb() = value.to_rgb(g_std_lighting_conditions);
+        shading_result.m_main.rgb() = value.illuminance_to_rgb(g_std_lighting_conditions);
         shading_result.m_main.a = 1.0f;
     }
 }
@@ -324,8 +324,8 @@ void DiagnosticSurfaceShader::evaluate(
                     const ShadingRay& ray = shading_point.get_ray();
                     const Dual3d outgoing(
                         -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
+                        -ray.m_rx_dir,
+                        -ray.m_ry_dir);
 
                     BSDF::LocalGeometry local_geometry;
                     local_geometry.m_shading_point = &shading_point;
@@ -597,7 +597,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result,
             integer_to_color3<float>(shading_point.get_assembly_instance().get_uid()));
         break;
-      
+
       case Objects:
         set_shading_result(
             shading_result,
@@ -652,8 +652,8 @@ void DiagnosticSurfaceShader::evaluate(
                 {
                     const Dual3d outgoing(
                         -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
+                        -ray.m_rx_dir,
+                        -ray.m_ry_dir);
 
                     BSDF::LocalGeometry local_geometry;
                     local_geometry.m_shading_point = &shading_point;
@@ -677,8 +677,8 @@ void DiagnosticSurfaceShader::evaluate(
                     // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
                     const double spread =
                         std::max(
-                            norm(sample.m_incoming.get_dx()),
-                            norm(sample.m_incoming.get_dy())) * 3.0;
+                            norm(sample.m_incoming.get_dx() - sample.m_incoming.get_value()),
+                            norm(sample.m_incoming.get_dy() - sample.m_incoming.get_value())) * 3.0;
                     set_shading_result(
                         shading_result,
                         Color3f(static_cast<float>(spread)));

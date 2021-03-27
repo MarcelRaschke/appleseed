@@ -48,8 +48,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/image.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
@@ -57,13 +56,12 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -180,7 +178,7 @@ namespace
             const ParamArray&       params)
           : PerspectiveCamera(name, params)
         {
-            m_inputs.declare("diaphragm_map", InputFormatSpectralReflectance, "");
+            m_inputs.declare("diaphragm_map", InputFormat::SpectralReflectance, "");
         }
 
         void release() override
@@ -340,13 +338,10 @@ namespace
             {
                 const Vector2d px(ndc.get_value() + ndc.get_dx());
                 const Vector2d py(ndc.get_value() + ndc.get_dy());
-
-                ray.m_rx.m_org = ray.m_org;
-                ray.m_ry.m_org = ray.m_org;
-
-                ray.m_rx.m_dir = compute_ray_direction(px, lens_point, transform);
-                ray.m_ry.m_dir = compute_ray_direction(py, lens_point, transform);
-
+                ray.m_rx_org = ray.m_org;
+                ray.m_ry_org = ray.m_org;
+                ray.m_rx_dir = compute_ray_direction(px, lens_point, transform);
+                ray.m_ry_dir = compute_ray_direction(py, lens_point, transform);
                 ray.m_has_differentials = true;
             }
         }

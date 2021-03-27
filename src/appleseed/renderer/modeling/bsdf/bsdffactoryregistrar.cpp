@@ -52,7 +52,7 @@
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 using namespace foundation;
 
@@ -86,6 +86,12 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetBlinnBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetGlossyBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetLambertianBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetMetalBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetPlasticBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetSheenBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PlasticBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SheenBRDFFactory()));

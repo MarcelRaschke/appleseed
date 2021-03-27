@@ -31,8 +31,8 @@
 #include "imaterialfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -149,6 +149,24 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("visible_if",
                 Dictionary()
                     .insert("displacement_method", "normal")));
+}
+
+void IMaterialFactory::add_default_tangent_mode_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "default_tangent_mode")
+            .insert("label", "Default Tangent Mode")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("UV Coordinates", "uv")
+                    .insert("Local X direction", "local_x")
+                    .insert("Local Y direction", "local_y")
+                    .insert("Local Z direction", "local_z")
+                    .insert("Radial", "radial"))
+            .insert("use", "optional")
+            .insert("default", "uv"));
 }
 
 }   // namespace renderer

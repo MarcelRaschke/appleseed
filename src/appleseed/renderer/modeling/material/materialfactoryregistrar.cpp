@@ -32,15 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/material/oslmaterial.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 using namespace foundation;
 
@@ -62,9 +59,6 @@ MaterialFactoryRegistrar::MaterialFactoryRegistrar(const SearchPaths& search_pat
   : impl(new Impl())
 {
     // Register built-in factories.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    impl->register_factory(auto_release_ptr<FactoryType>(new DisneyMaterialFactory()));
-#endif
     impl->register_factory(auto_release_ptr<FactoryType>(new GenericMaterialFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new OSLMaterialFactory()));
 }

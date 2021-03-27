@@ -37,23 +37,20 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/bssrdf/sss.h"
-#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
-#include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
@@ -86,6 +83,7 @@ namespace
     //
 
     const char* Model = "plastic_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_plastic_brdf";
 
     class PlasticBRDFImpl
       : public BSDF
@@ -96,13 +94,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
-            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("ior", InputFormatFloat, "1.5");
-            m_inputs.declare("internal_scattering", InputFormatFloat, "1.0");
+            m_inputs.declare("diffuse_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("specular_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("specular_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.15");
+            m_inputs.declare("ior", InputFormat::Float, "1.5");
+            m_inputs.declare("internal_scattering", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -187,7 +185,7 @@ namespace
                     sample.m_value.m_beauty = sample.m_value.m_glossy;
                     sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
                     sample.m_min_roughness = values->m_roughness;
-                    sample.compute_reflected_differentials(local_geometry, outgoing);
+                    sample.compute_glossy_reflected_differentials(local_geometry, values->m_roughness, outgoing);
                 }
                 else
                 {
@@ -210,7 +208,7 @@ namespace
                             sample.m_value.m_glossy);
                         sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-                        sample.compute_reflected_differentials(local_geometry, outgoing);
+                        sample.compute_glossy_reflected_differentials(local_geometry, values->m_roughness, outgoing);
                     }
                 }
             }
@@ -219,7 +217,7 @@ namespace
                 wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
 
                 const float probability = wi.y * RcpPi<float>() * (1.0f - specular_probability);
-                assert(probability > 0.0f);
+                assert(probability >= 0.0f);
 
                 if (probability > 1.0e-6f)
                 {
@@ -238,7 +236,7 @@ namespace
                     sample.m_value.m_beauty = sample.m_value.m_diffuse;
                     sample.m_aov_components.m_albedo = values->m_diffuse_reflectance;
 
-                    sample.compute_reflected_differentials(local_geometry, outgoing);
+                    sample.compute_diffuse_differentials(outgoing);
                 }
             }
         }
@@ -441,7 +439,20 @@ namespace
         }
     };
 
+    class MicrofacetPlasticBRDFImpl
+      : public PlasticBRDFImpl
+    {
+      public:
+        using PlasticBRDFImpl::PlasticBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<PlasticBRDFImpl> PlasticBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetPlasticBRDFImpl> MicrofacetPlasticBRDF;
 }
 
 
@@ -575,6 +586,31 @@ auto_release_ptr<BSDF> PlasticBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new PlasticBRDF(name, params));
+}
+
+
+//
+// MicrofacetPlasticBRDFFactory class implementation.
+//
+
+const char* MicrofacetPlasticBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetPlasticBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Plastic BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetPlasticBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetPlasticBRDF(name, params));
 }
 
 }   // namespace renderer

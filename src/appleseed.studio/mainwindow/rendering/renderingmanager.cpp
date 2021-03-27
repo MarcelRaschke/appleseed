@@ -34,8 +34,10 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/rendertab.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/statusbar.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -52,9 +54,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -111,7 +113,7 @@ namespace
             const MasterRenderer::RenderingResult rendering_result =
                 m_master_renderer.render(m_renderer_controller);
 
-            if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
+            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
 
             RENDERER_LOG_DEBUG("master renderer thread is ending...");
@@ -140,47 +142,47 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
     //
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        SLOT(slot_frame_begin()),
+        &m_renderer_controller, &QtRendererController::signal_frame_begin,
+        this, &RenderingManager::slot_frame_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_frame_end()),
-        SLOT(slot_frame_end()),
+        &m_renderer_controller, &QtRendererController::signal_frame_end,
+        this, &RenderingManager::slot_frame_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_begin()),
-        SLOT(slot_rendering_begin()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_begin,
+        this, &RenderingManager::slot_rendering_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        SLOT(slot_rendering_end()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_success,
+        this, &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        SLOT(slot_rendering_end()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_abort,
+        this, &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_pause()),
-        SLOT(slot_rendering_pause()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_pause,
+        this, &RenderingManager::slot_rendering_pause,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_resume()),
-        SLOT(slot_rendering_resume()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_resume,
+        this, &RenderingManager::slot_rendering_resume,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        SIGNAL(signal_rendering_end()));
+        &m_renderer_controller, &QtRendererController::signal_rendering_success,
+        this, &RenderingManager::signal_rendering_end);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        SIGNAL(signal_rendering_end()));
+        &m_renderer_controller, &QtRendererController::signal_rendering_abort,
+        this, &RenderingManager::signal_rendering_end);
 }
 
 RenderingManager::~RenderingManager()
@@ -202,7 +204,7 @@ void RenderingManager::start_rendering(
 
     m_render_tab->get_render_widget()->start_render();
 
-    TileCallbackCollectionFactory* tile_callback_collection_factory = 
+    TileCallbackCollectionFactory* tile_callback_collection_factory =
         new TileCallbackCollectionFactory();
 
     tile_callback_collection_factory->insert(
@@ -229,20 +231,20 @@ void RenderingManager::start_rendering(
             m_renderer_controller));
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
-        SLOT(slot_frame_end()));
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, &RenderingManager::slot_frame_end);
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
-        SLOT(slot_rendering_failed()));
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, &RenderingManager::slot_rendering_failed);
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
-        SIGNAL(signal_rendering_end()));
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, &RenderingManager::signal_rendering_end);
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(finished()),
-        SLOT(slot_master_renderer_thread_finished()));
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::finished,
+        this, &RenderingManager::slot_master_renderer_thread_finished);
 
     m_master_renderer_thread->start();
 }
